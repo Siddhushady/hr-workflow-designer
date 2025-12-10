@@ -1,5 +1,5 @@
 // src/components/layout/CanvasContainer.tsx
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -23,9 +23,11 @@ import type {
   Edge as RFEdge,
   Node as RFNode,
   OnConnect,
+  NodeChange,
+  EdgeChange,
 } from "reactflow";
 
-
+// Define nodeTypes OUTSIDE the component to prevent recreation
 const nodeTypes = {
   start: CustomStartNode,
   task: CustomTaskNode,
@@ -35,16 +37,15 @@ const nodeTypes = {
 };
 
 export const CanvasContainer: React.FC = () => {
-  const { nodes, edges, setEdges, selectNode, deleteNode } = useWorkflowStore(
-    (state) => ({
-      nodes: state.nodes,
-      edges: state.edges,
-      setEdges: state.setEdges,
-      selectNode: state.selectNode,
-      deleteNode: state.deleteNode,
-    })
-  );
+  const nodes = useWorkflowStore((state) => state.nodes);
+  const edges = useWorkflowStore((state) => state.edges);
+  const setEdges = useWorkflowStore((state) => state.setEdges);
+  const updateNodePosition = useWorkflowStore((state) => state.updateNodePosition);
+  const selectNode = useWorkflowStore((state) => state.selectNode);
+  const deleteNode = useWorkflowStore((state) => state.deleteNode);
+  const deleteEdge = useWorkflowStore((state) => state.deleteEdge);
 
+  // Convert store nodes to ReactFlow nodes
   const rfNodes: RFNode[] = useMemo(
     () =>
       nodes.map((n) => ({
@@ -56,6 +57,7 @@ export const CanvasContainer: React.FC = () => {
     [nodes]
   );
 
+  // Convert store edges to ReactFlow edges
   const rfEdges: RFEdge[] = useMemo(
     () =>
       edges.map((e) => ({
@@ -66,9 +68,50 @@ export const CanvasContainer: React.FC = () => {
     [edges]
   );
 
-  const [localNodes, , onNodesChange] = useNodesState(rfNodes);
-  const [localEdges, , onEdgesChange] = useEdgesState(rfEdges);
+  // Initialize ReactFlow state with converted nodes and edges
+  const [localNodes, setLocalNodes, onNodesChange] = useNodesState(rfNodes);
+  const [localEdges, setLocalEdges, onEdgesChange] = useEdgesState(rfEdges);
 
+  // CRITICAL: Sync external store changes into local React Flow state
+  useEffect(() => {
+    setLocalNodes(rfNodes);
+  }, [rfNodes, setLocalNodes]);
+
+  useEffect(() => {
+    setLocalEdges(rfEdges);
+  }, [rfEdges, setLocalEdges]);
+
+  // Sync localNodes changes back to Zustand store
+  const handleNodesChange = useCallback(
+    (changes: NodeChange[]) => {
+      onNodesChange(changes);
+      
+      // Persist position changes to the store
+      changes.forEach((change) => {
+        if (change.type === "position" && change.position) {
+          updateNodePosition(change.id, change.position);
+        }
+      });
+    },
+    [onNodesChange, updateNodePosition]
+  );
+
+  // Sync localEdges changes back to Zustand store
+  const handleEdgesChange = useCallback(
+    (changes: EdgeChange[]) => {
+      onEdgesChange(changes);
+      
+      // Handle edge deletion
+      changes.forEach((change) => {
+        if (change.type === "remove") {
+          deleteEdge(change.id);
+        }
+      });
+    },
+    [onEdgesChange, deleteEdge]
+  );
+
+  // Handle new edge connections
   const handleConnect: OnConnect = useCallback(
     (connection: Connection) => {
       if (!connection.source || !connection.target) return;
@@ -82,6 +125,7 @@ export const CanvasContainer: React.FC = () => {
     [edges, setEdges]
   );
 
+  // Handle node click to select it
   const onNodeClick = useCallback(
     (_: any, node: RFNode) => {
       selectNode(node.id);
@@ -89,6 +133,7 @@ export const CanvasContainer: React.FC = () => {
     [selectNode]
   );
 
+  // Handle right-click to delete node
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: RFNode) => {
       event.preventDefault();
@@ -104,8 +149,8 @@ export const CanvasContainer: React.FC = () => {
       <ReactFlow
         nodes={localNodes}
         edges={localEdges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        onNodesChange={handleNodesChange}
+        onEdgesChange={handleEdgesChange}
         onConnect={handleConnect}
         nodeTypes={nodeTypes}
         onNodeClick={onNodeClick}

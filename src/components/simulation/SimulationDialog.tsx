@@ -8,15 +8,11 @@ import { SimulationLog } from "./SimulationLog";
 export const SimulationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const toGraph = useWorkflowStore((s) => s.toGraph);
-  const { status, result, setStatus, setResult, setError } = useSimulationStore(
-    (s) => ({
-      status: s.status,
-      result: s.result,
-      setStatus: s.setStatus,
-      setResult: s.setResult,
-      setError: s.setError,
-    })
-  );
+  const status = useSimulationStore((s) => s.status);
+  const result = useSimulationStore((s) => s.result);
+  const setStatus = useSimulationStore((s) => s.setStatus);
+  const setResult = useSimulationStore((s) => s.setResult);
+  const setError = useSimulationStore((s) => s.setError);
 
   const handleRun = async () => {
     setStatus("running");

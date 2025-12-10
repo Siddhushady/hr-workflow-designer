@@ -1,61 +1,30 @@
 // src/components/forms/TaskForm.tsx
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import type { WorkflowNode } from "../../core/types/workflow";
+import React from "react";
+import type { WorkflowNode, TaskNodeData } from "../../core/types/workflow";
 import { useWorkflowStore } from "../../store/useWorkflowStore";
 
 interface TaskFormProps {
   node: WorkflowNode;
 }
 
-interface TaskFormValues {
-  label: string;
-  description: string;
-  assignee: string;
-  dueDate: string;
-}
-
 export const TaskForm: React.FC<TaskFormProps> = ({ node }) => {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+  const data = node.data as TaskNodeData;
 
-  const { register, handleSubmit, reset } = useForm<TaskFormValues>({
-    defaultValues: {
-      label: (node.data as any).label ?? "Task",
-      description: (node.data as any).description ?? "",
-      assignee: (node.data as any).assignee ?? "",
-      dueDate: (node.data as any).dueDate ?? "",
-    },
-  });
-
-  useEffect(() => {
-    reset({
-      label: (node.data as any).label ?? "Task",
-      description: (node.data as any).description ?? "",
-      assignee: (node.data as any).assignee ?? "",
-      dueDate: (node.data as any).dueDate ?? "",
-    });
-  }, [node.id]);
-
-  const onSubmit = (values: TaskFormValues) => {
-    updateNodeData(node.id, values);
+  const handleChange = (field: keyof TaskNodeData, value: any) => {
+    updateNodeData(node.id, { [field]: value });
   };
 
   return (
-    <form
-      onBlur={handleSubmit(onSubmit)}
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit(onSubmit)();
-      }}
-      className="space-y-3"
-    >
+    <form className="space-y-3">
       <div>
         <label className="block text-xs font-semibold text-slate-300 mb-1">
           Title
         </label>
         <input
-          {...register("label")}
-          className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs"
+          value={data.label ?? ""}
+          onChange={(e) => handleChange("label", e.target.value)}
+          className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
       <div>
@@ -63,9 +32,10 @@ export const TaskForm: React.FC<TaskFormProps> = ({ node }) => {
           Description
         </label>
         <textarea
-          {...register("description")}
+          value={data.description ?? ""}
+          onChange={(e) => handleChange("description", e.target.value)}
           rows={3}
-          className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs"
+          className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
       <div className="flex gap-2">
@@ -74,8 +44,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ node }) => {
             Assignee
           </label>
           <input
-            {...register("assignee")}
-            className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs"
+            value={data.assignee ?? ""}
+            onChange={(e) => handleChange("assignee", e.target.value)}
+            className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
         <div className="flex-1">
@@ -84,8 +55,9 @@ export const TaskForm: React.FC<TaskFormProps> = ({ node }) => {
           </label>
           <input
             type="date"
-            {...register("dueDate")}
-            className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs"
+            value={data.dueDate ?? ""}
+            onChange={(e) => handleChange("dueDate", e.target.value)}
+            className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
       </div>

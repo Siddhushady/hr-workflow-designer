@@ -1,59 +1,47 @@
-import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import type { WorkflowNode } from "../../core/types/workflow";
+import React from "react";
+import type { WorkflowNode, ApprovalNodeData } from "../../core/types/workflow";
 import { useWorkflowStore } from "../../store/useWorkflowStore";
 
 interface ApprovalFormProps {
   node: WorkflowNode;
 }
 
-interface ApprovalFormValues {
-  label: string;
-  approverRole: string;
-  autoApproveThreshold: number;
-}
-
 export const ApprovalForm: React.FC<ApprovalFormProps> = ({ node }) => {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+  const data = node.data as ApprovalNodeData;
 
-  const { register, handleSubmit, reset } = useForm<ApprovalFormValues>({
-    defaultValues: {
-      label: (node.data as any).label ?? "Approval",
-      approverRole: (node.data as any).approverRole ?? "Manager",
-      autoApproveThreshold: (node.data as any).autoApproveThreshold ?? 0,
-    },
-  });
-
-  useEffect(() => {
-    reset({
-      label: (node.data as any).label ?? "Approval",
-      approverRole: (node.data as any).approverRole ?? "Manager",
-      autoApproveThreshold: (node.data as any).autoApproveThreshold ?? 0,
-    });
-  }, [node.id]);
-
-  const onSubmit = (values: ApprovalFormValues) => {
-    updateNodeData(node.id, values);
+  const handleChange = (field: keyof ApprovalNodeData, value: any) => {
+    updateNodeData(node.id, { [field]: value });
   };
 
   return (
-    <form
-      onBlur={handleSubmit(onSubmit)}
-      className="space-y-4"
-    >
+    <form className="space-y-4">
       <div>
         <label className="text-xs font-semibold text-slate-300 mb-1 block">Title</label>
-        <input {...register("label")} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs"/>
+        <input
+          value={data.label ?? ""}
+          onChange={(e) => handleChange("label", e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+        />
       </div>
 
       <div>
         <label className="text-xs font-semibold text-slate-300 mb-1 block">Approver Role</label>
-        <input {...register("approverRole")} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs"/>
+        <input
+          value={data.approverRole ?? "Manager"}
+          onChange={(e) => handleChange("approverRole", e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+        />
       </div>
 
       <div>
         <label className="text-xs font-semibold text-slate-300 mb-1 block">Auto-Approve Threshold (optional)</label>
-        <input type="number" {...register("autoApproveThreshold")} className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs"/>
+        <input
+          type="number"
+          value={data.autoApproveThreshold ?? 0}
+          onChange={(e) => handleChange("autoApproveThreshold", parseInt(e.target.value, 10) || 0)}
+          className="w-full bg-slate-900 border border-slate-700 rounded-md px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
+        />
       </div>
     </form>
   );

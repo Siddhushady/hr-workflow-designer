@@ -1,79 +1,55 @@
 // src/components/forms/StartForm.tsx
-import React, { useEffect } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
-import type { WorkflowNode } from "../../core/types/workflow";
+import React, { useState } from "react";
+import type { WorkflowNode, StartNodeData } from "../../core/types/workflow";
 import { useWorkflowStore } from "../../store/useWorkflowStore";
 
 interface StartFormProps {
   node: WorkflowNode;
 }
 
-type MetadataEntry = { key: string; value: string };
-
-interface StartFormValues {
-  label: string;
-  metadata: MetadataEntry[];
-}
-
 export const StartForm: React.FC<StartFormProps> = ({ node }) => {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
+  const data = node.data as StartNodeData;
+  const [newKeyValue, setNewKeyValue] = useState({ key: "", value: "" });
 
-  const metadataArray =
-    node.data && "metadata" in node.data
-      ? Object.entries(node.data.metadata ?? {}).map(([key, value]) => ({
-          key,
-          value,
-        }))
-      : [];
+  const handleLabelChange = (value: string) => {
+    updateNodeData(node.id, { label: value });
+  };
 
-  const { register, control, handleSubmit, reset } = useForm<StartFormValues>({
-    defaultValues: {
-      label: (node.data as any).label ?? "Start",
-      metadata: metadataArray,
-    },
-  });
+  const handleAddMetadata = () => {
+    if (newKeyValue.key.trim()) {
+      const updatedMetadata = {
+        ...data.metadata,
+        [newKeyValue.key.trim()]: newKeyValue.value,
+      };
+      updateNodeData(node.id, { metadata: updatedMetadata });
+      setNewKeyValue({ key: "", value: "" });
+    }
+  };
 
-  const { fields, append, remove } = useFieldArray({
-    name: "metadata",
-    control,
-  });
+  const handleRemoveMetadata = (key: string) => {
+    const updatedMetadata = { ...data.metadata };
+    delete updatedMetadata[key];
+    updateNodeData(node.id, { metadata: updatedMetadata });
+  };
 
-  useEffect(() => {
-    reset({
-      label: (node.data as any).label ?? "Start",
-      metadata: metadataArray,
-    });
-  }, [node.id]);
-
-  const onSubmit = (values: StartFormValues) => {
-    const metadata: Record<string, string> = {};
-    values.metadata.forEach((entry) => {
-      if (entry.key.trim()) {
-        metadata[entry.key.trim()] = entry.value;
-      }
-    });
-
-    updateNodeData(node.id, {
-      label: values.label,
-      metadata,
-    });
+  const handleMetadataValueChange = (key: string, value: string) => {
+    const updatedMetadata = {
+      ...data.metadata,
+      [key]: value,
+    };
+    updateNodeData(node.id, { metadata: updatedMetadata });
   };
 
   return (
-    <form
-      onBlur={handleSubmit(onSubmit)}
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit(onSubmit)();
-      }}
-      className="space-y-4"
-    >
+    <form className="space-y-4">
       <div>
         <label className="block text-xs font-semibold text-slate-300 mb-1">
           Start title
         </label>
         <input
-          {...register("label")}
+          value={data.label ?? ""}
+          onChange={(e) => handleLabelChange(e.target.value)}
           className="w-full px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-xs focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
@@ -85,39 +61,50 @@ export const StartForm: React.FC<StartFormProps> = ({ node }) => {
           </span>
           <button
             type="button"
-            onClick={() => append({ key: "", value: "" })}
-            className="text-[11px] text-accent hover:underline"
+            onClick={handleAddMetadata}
+            disabled={!newKeyValue.key.trim()}
+            className="text-[11px] text-accent hover:underline disabled:opacity-50 disabled:cursor-not-allowed"
           >
             + Add
           </button>
         </div>
-        <div className="space-y-2">
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex gap-1">
+        <div className="space-y-2 mb-3">
+          {Object.entries(data.metadata || {}).map(([key, value]) => (
+            <div key={key} className="flex gap-1">
               <input
-                placeholder="Key"
-                {...register(`metadata.${index}.key` as const)}
-                className="w-1/2 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-[11px]"
+                readOnly
+                value={key}
+                className="w-1/2 px-2 py-1 rounded-md bg-slate-800 border border-slate-700 text-[11px] text-slate-400"
               />
               <input
+                value={value}
+                onChange={(e) => handleMetadataValueChange(key, e.target.value)}
                 placeholder="Value"
-                {...register(`metadata.${index}.value` as const)}
-                className="w-1/2 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-[11px]"
+                className="w-1/3 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-[11px] focus:outline-none focus:ring-1 focus:ring-accent"
               />
               <button
                 type="button"
-                onClick={() => remove(index)}
-                className="text-[10px] text-slate-400 hover:text-danger"
+                onClick={() => handleRemoveMetadata(key)}
+                className="text-[11px] text-red-400 hover:text-red-300 px-1"
               >
                 ✕
               </button>
             </div>
           ))}
-          {fields.length === 0 && (
-            <p className="text-[11px] text-slate-500">
-              No metadata yet. Add key-value pairs if needed.
-            </p>
-          )}
+        </div>
+        <div className="flex gap-1 p-2 bg-slate-900/50 rounded-md border border-slate-700 border-dashed">
+          <input
+            placeholder="Key"
+            value={newKeyValue.key}
+            onChange={(e) => setNewKeyValue({ ...newKeyValue, key: e.target.value })}
+            className="w-1/2 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-[11px] focus:outline-none focus:ring-1 focus:ring-accent"
+          />
+          <input
+            placeholder="Value"
+            value={newKeyValue.value}
+            onChange={(e) => setNewKeyValue({ ...newKeyValue, value: e.target.value })}
+            className="w-1/2 px-2 py-1 rounded-md bg-slate-900 border border-slate-700 text-[11px] focus:outline-none focus:ring-1 focus:ring-accent"
+          />
         </div>
       </div>
     </form>

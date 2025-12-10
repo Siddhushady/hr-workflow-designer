@@ -19,6 +19,7 @@ interface WorkflowState {
 
   addNode: (type: WorkflowNodeType, position: { x: number; y: number }) => void;
   updateNodeData: (id: string, data: any) => void;
+  updateNodePosition: (id: string, position: { x: number; y: number }) => void;
   deleteNode: (id: string) => void;
 
   setEdges: (edges: WorkflowEdge[]) => void;
@@ -99,6 +100,16 @@ export const useWorkflowStore = create<WorkflowState>((set, get) => ({
         const node = state.nodes.find((n) => n.id === id);
         if (node) {
           node.data = { ...node.data, ...data };
+        }
+      })
+    ),
+
+  updateNodePosition: (id, position) =>
+    set(
+      produce((state: WorkflowState) => {
+        const node = state.nodes.find((n) => n.id === id);
+        if (node) {
+          node.position = position;
         }
       })
     ),

@@ -9,10 +9,8 @@ import { AutomationForm } from "../forms/AutomationForm";
 import { EndForm } from "../forms/EndForm";
 
 export const NodeConfigPanel: React.FC = () => {
-  const { nodes, selectedNodeId } = useWorkflowStore((state) => ({
-    nodes: state.nodes,
-    selectedNodeId: state.selectedNodeId,
-  }));
+  const nodes = useWorkflowStore((state) => state.nodes);
+  const selectedNodeId = useWorkflowStore((state) => state.selectedNodeId);
 
   const selectedNode = nodes.find((n) => n.id === selectedNodeId) as
     | WorkflowNode

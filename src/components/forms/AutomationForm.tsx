@@ -1,62 +1,49 @@
 // src/components/forms/AutomationForm.tsx
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import type { WorkflowNode } from "../../core/types/workflow.ts";
-import { useWorkflowStore } from "../../store/useWorkflowStore.ts";
-import { useAutomationAPI } from "../../hooks/useAutomationAPI.ts";
-import type { AutomationDefinition } from "../../core/types/automation.ts";
+import type { WorkflowNode, AutomationNodeData } from "../../core/types/workflow";
+import { useWorkflowStore } from "../../store/useWorkflowStore";
+import { useAutomationAPI } from "../../hooks/useAutomationAPI";
+import type { AutomationDefinition } from "../../core/types/automation";
 
 interface AutomationFormProps {
   node: WorkflowNode;
 }
 
-interface AutomationFormValues {
-  label: string;
-  actionId: string;
-  params: Record<string, string>;
-}
-
 export const AutomationForm: React.FC<AutomationFormProps> = ({ node }) => {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
   const { actions, loadActions } = useAutomationAPI();
-
-  const { register, watch, handleSubmit } = useForm<AutomationFormValues>({
-    defaultValues: {
-      label: (node.data as any).label ?? "Automation Step",
-      actionId: (node.data as any).actionId ?? "",
-      params: (node.data as any).params ?? {},
-    },
-  });
+  const data = node.data as AutomationNodeData;
 
   useEffect(() => {
     loadActions();
   }, [loadActions]);
 
-  const selectedActionId = watch("actionId");
-  const selectedAction: AutomationDefinition | undefined = actions.find(
-    (a: AutomationDefinition) => a.id === selectedActionId
-  );
-
-  const onSubmit = (values: AutomationFormValues) => {
-    updateNodeData(node.id, values);
+  const handleChange = (field: keyof AutomationNodeData, value: any) => {
+    updateNodeData(node.id, { [field]: value });
   };
 
+  const handleParamChange = (paramName: string, value: string) => {
+    const updatedParams = {
+      ...data.params,
+      [paramName]: value,
+    };
+    handleChange("params", updatedParams);
+  };
+
+  const selectedAction: AutomationDefinition | undefined = actions.find(
+    (a: AutomationDefinition) => a.id === data.actionId
+  );
+
   return (
-    <form
-      onBlur={handleSubmit(onSubmit)}
-      onSubmit={(e) => {
-        e.preventDefault();
-        handleSubmit(onSubmit)();
-      }}
-      className="space-y-4"
-    >
+    <form className="space-y-4">
       <div>
         <label className="text-xs font-semibold text-slate-300 mb-1 block">
           Title
         </label>
         <input
-          {...register("label")}
-          className="w-full bg-slate-900 border border-slate-700 px-2 py-1 rounded-md text-xs"
+          value={data.label ?? ""}
+          onChange={(e) => handleChange("label", e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 px-2 py-1 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-accent"
         />
       </div>
 
@@ -65,8 +52,9 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ node }) => {
           Automation Action
         </label>
         <select
-          {...register("actionId")}
-          className="w-full bg-slate-900 border border-slate-700 px-2 py-1 rounded-md text-xs"
+          value={data.actionId ?? ""}
+          onChange={(e) => handleChange("actionId", e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 px-2 py-1 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">-- Select Action --</option>
           {actions.map((a: AutomationDefinition) => (
@@ -86,8 +74,9 @@ export const AutomationForm: React.FC<AutomationFormProps> = ({ node }) => {
             <div key={param}>
               <label className="text-[11px] text-slate-400">{param}</label>
               <input
-                className="w-full text-xs bg-slate-900 border border-slate-700 px-2 py-1 rounded-md"
-                {...register(`params.${param}` as const)}
+                value={(data.params?.[param] as string) ?? ""}
+                onChange={(e) => handleParamChange(param, e.target.value)}
+                className="w-full text-xs bg-slate-900 border border-slate-700 px-2 py-1 rounded-md focus:outline-none focus:ring-1 focus:ring-accent"
               />
             </div>
           ))}

@@ -2,11 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-slate-950 text-slate-100;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+/* Ensure full height for root and body */
+html,
+body,
+#root {
+  @apply h-full w-full m-0 p-0;
 }
 
-#root {
-  @apply min-h-screen;
+/* Global Theme */
+:root {
+  --canvas-bg: #0f121a;
+  --panel-bg: rgba(17, 24, 39, 0.9);
+}
+
+/* App container */
+body {
+  @apply bg-gray-950 text-gray-200 overflow-hidden;
+}
+
+/* Smooth transitions for UI */
+* {
+  @apply transition-all duration-150 ease-in-out;
+}
+
+/* Sidebar Styling */
+.sidebar-btn {
+  @apply py-1.5 px-3 text-xs rounded-lg bg-slate-800/60 border border-slate-700
+         hover:bg-slate-700 cursor-pointer text-slate-200 block w-full text-left mb-1;
+}
+
+/* Node panel */
+.node-config-panel {
+  @apply p-4 text-sm bg-slate-950/90 border-l border-slate-800 overflow-y-auto;
+}
+
+/* Scroll styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-700 rounded-md;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-500;
 }
