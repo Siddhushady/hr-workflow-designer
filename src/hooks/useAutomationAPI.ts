@@ -1,14 +1,24 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "../api/client";
 import type { AutomationDefinition } from "../core/types/automation";
 
 export function useAutomationAPI() {
   const [actions, setActions] = useState<AutomationDefinition[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  async function loadActions() {
-    const res = await api.getAutomations();
-    setActions(res);
-  }
+  const loadActions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await api.getAutomations();
+      setActions(res);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-  return { actions, loadActions };
+  useEffect(() => {
+    loadActions();
+  }, [loadActions]);
+
+  return { actions, loadActions, loading };
 }

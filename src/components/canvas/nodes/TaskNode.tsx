@@ -6,39 +6,32 @@ import type { NodeProps } from "reactflow";
 
 export const CustomTaskNode: React.FC<NodeProps> = ({ data }) => {
   return (
-    <div className="px-3 py-2 rounded-2xl border-2 border-indigo-500/60 bg-indigo-900/40 shadow-md text-xs text-slate-100 max-w-xs">
-      <div className="flex justify-between items-center gap-2">
-        <span className="font-semibold text-[11px] uppercase tracking-wide">
-          📋 TASK
-        </span>
+    <div className="w-56 h-32 px-4 py-3 rounded-lg border border-indigo-500 bg-indigo-900/30 shadow-md text-xs text-slate-100 flex flex-col justify-between">
+      <div>
+        <div className="font-semibold text-sm uppercase tracking-wider">Task</div>
+        <div className="mt-2 text-xs font-medium line-clamp-1">
+          {data.label ?? "Task"}
+        </div>
         {data.assignee && (
-          <span className="text-[10px] text-slate-300 truncate">
-            👤 {data.assignee}
-          </span>
+          <div className="text-[10px] text-slate-400 mt-1">
+            Assignee: {data.assignee}
+          </div>
+        )}
+        {data.description && (
+          <div className="text-[10px] text-slate-300 mt-1 line-clamp-1">
+            {data.description}
+          </div>
         )}
       </div>
-      <div className="mt-1 text-xs font-medium truncate">
-        {data.label ?? "Task"}
-      </div>
-      {data.description && (
-        <div className="mt-1 text-[11px] text-slate-300 line-clamp-2">
-          {data.description}
-        </div>
-      )}
-      {data.dueDate && (
-        <div className="mt-1 text-[10px] text-slate-400">
-          ⏰ Due: {data.dueDate}
-        </div>
-      )}
       <Handle
         type="target"
         position={Position.Top}
-        className="w-2 h-2 bg-indigo-300 border-2 border-indigo-900"
+        className="w-2 h-2 bg-indigo-300 border border-indigo-900"
       />
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-2 h-2 bg-indigo-300 border-2 border-indigo-900"
+        className="w-2 h-2 bg-indigo-300 border border-indigo-900"
       />
     </div>
   );

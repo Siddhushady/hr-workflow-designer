@@ -4,28 +4,23 @@ import type { NodeProps } from "reactflow";
 
 export const CustomApprovalNode: React.FC<NodeProps> = ({ data }) => {
   return (
-    <div className="px-3 py-2 rounded-2xl border border-emerald-500/60 bg-emerald-900/40 shadow-md text-xs text-emerald-50 w-48">
-      
-      <div className="font-semibold text-[11px] uppercase tracking-wide flex items-center gap-1">
-        📝 Approval
-      </div>
-
-      <div className="mt-1 text-xs font-medium truncate">
-        {data.label ?? "Approval Step"}
-      </div>
-
-      <div className="mt-1 text-[11px] text-emerald-200">
-        Role: <span className="font-semibold">{data.approverRole || "N/A"}</span>
-      </div>
-
-      {data.autoApproveThreshold > 0 && (
-        <div className="text-[10px] text-emerald-300 mt-1">
-          Auto-approve ≥ {data.autoApproveThreshold}
+    <div className="w-56 h-32 px-4 py-3 rounded-lg border border-emerald-500 bg-emerald-900/30 shadow-md text-xs text-emerald-50 flex flex-col justify-between">
+      <div>
+        <div className="font-semibold text-sm uppercase tracking-wider">Approval</div>
+        <div className="mt-2 text-xs font-medium line-clamp-1">
+          {data.label ?? "Approval"}
         </div>
-      )}
-
-      <Handle type="target" position={Position.Top} className="w-2 h-2 bg-emerald-300 border-2 border-emerald-900" />
-      <Handle type="source" position={Position.Bottom} className="w-2 h-2 bg-emerald-300 border-2 border-emerald-900" />
+        <div className="text-[10px] text-emerald-200 mt-1">
+          Role: {data.approverRole || "N/A"}
+        </div>
+        {data.autoApproveThreshold > 0 && (
+          <div className="text-[10px] text-emerald-300 mt-1">
+            Threshold: {data.autoApproveThreshold}
+          </div>
+        )}
+      </div>
+      <Handle type="target" position={Position.Top} className="w-2 h-2 bg-emerald-300 border border-emerald-900" />
+      <Handle type="source" position={Position.Bottom} className="w-2 h-2 bg-emerald-300 border border-emerald-900" />
     </div>
   );
 };

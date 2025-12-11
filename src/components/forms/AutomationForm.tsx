@@ -1,5 +1,5 @@
 // src/components/forms/AutomationForm.tsx
-import React, { useEffect } from "react";
+import React from "react";
 import type { WorkflowNode, AutomationNodeData } from "../../core/types/workflow";
 import { useWorkflowStore } from "../../store/useWorkflowStore";
 import { useAutomationAPI } from "../../hooks/useAutomationAPI";
@@ -11,12 +11,8 @@ interface AutomationFormProps {
 
 export const AutomationForm: React.FC<AutomationFormProps> = ({ node }) => {
   const updateNodeData = useWorkflowStore((s) => s.updateNodeData);
-  const { actions, loadActions } = useAutomationAPI();
+  const { actions } = useAutomationAPI();
   const data = node.data as AutomationNodeData;
-
-  useEffect(() => {
-    loadActions();
-  }, [loadActions]);
 
   const handleChange = (field: keyof AutomationNodeData, value: any) => {
     updateNodeData(node.id, { [field]: value });

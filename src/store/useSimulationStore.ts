@@ -10,6 +10,7 @@ interface SimulationState {
   setStatus: (status: SimulationStatus) => void;
   setResult: (result: SimulationResult | null) => void;
   setError: (error?: string) => void;
+  clearResult: () => void;
 }
 
 export const useSimulationStore = create<SimulationState>((set) => ({
@@ -20,4 +21,5 @@ export const useSimulationStore = create<SimulationState>((set) => ({
   setStatus: (status) => set({ status }),
   setResult: (result) => set({ result }),
   setError: (error) => set({ lastError: error }),
+  clearResult: () => set({ result: null, status: "idle", lastError: undefined }),
 }));

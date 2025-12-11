@@ -1,5 +1,5 @@
 // src/components/layout/CanvasContainer.tsx
-import React, { useCallback, useMemo, useEffect } from "react";
+import React, { useCallback, useMemo, useEffect, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -10,6 +10,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 
 import { useWorkflowStore } from "../../store/useWorkflowStore";
+import { useSimulationStore } from "../../store/useSimulationStore";
 import type { WorkflowEdge } from "../../core/types/workflow";
 
 import { CustomStartNode } from "../canvas/nodes/StartNode";
@@ -17,6 +18,7 @@ import { CustomTaskNode } from "../canvas/nodes/TaskNode";
 import { CustomApprovalNode } from "../canvas/nodes/ApprovalNode";
 import { CustomAutomationNode } from "../canvas/nodes/AutomationNode";
 import { CustomEndNode } from "../canvas/nodes/EndNode";
+import { ContextMenu } from "./ContextMenu";
 
 import type {
   Connection,
@@ -37,6 +39,12 @@ const nodeTypes = {
 };
 
 export const CanvasContainer: React.FC = () => {
+  const [contextMenu, setContextMenu] = useState<{
+    x: number;
+    y: number;
+    nodeId: string;
+  } | null>(null);
+
   const nodes = useWorkflowStore((state) => state.nodes);
   const edges = useWorkflowStore((state) => state.edges);
   const setEdges = useWorkflowStore((state) => state.setEdges);
@@ -44,6 +52,7 @@ export const CanvasContainer: React.FC = () => {
   const selectNode = useWorkflowStore((state) => state.selectNode);
   const deleteNode = useWorkflowStore((state) => state.deleteNode);
   const deleteEdge = useWorkflowStore((state) => state.deleteEdge);
+  const clearResult = useSimulationStore((state) => state.clearResult);
 
   // Convert store nodes to ReactFlow nodes
   const rfNodes: RFNode[] = useMemo(
@@ -80,6 +89,11 @@ export const CanvasContainer: React.FC = () => {
   useEffect(() => {
     setLocalEdges(rfEdges);
   }, [rfEdges, setLocalEdges]);
+
+  // Clear simulation result when workflow changes
+  useEffect(() => {
+    clearResult();
+  }, [nodes, edges, clearResult]);
 
   // Sync localNodes changes back to Zustand store
   const handleNodesChange = useCallback(
@@ -133,16 +147,26 @@ export const CanvasContainer: React.FC = () => {
     [selectNode]
   );
 
-  // Handle right-click to delete node
+  // Handle right-click to show context menu
   const onNodeContextMenu = useCallback(
     (event: React.MouseEvent, node: RFNode) => {
       event.preventDefault();
-      if (confirm("Delete this node?")) {
-        deleteNode(node.id);
-      }
+      setContextMenu({
+        x: event.clientX,
+        y: event.clientY,
+        nodeId: node.id,
+      });
     },
-    [deleteNode]
+    []
   );
+
+  // Handle context menu delete action
+  const handleContextMenuDelete = useCallback(() => {
+    if (contextMenu) {
+      deleteNode(contextMenu.nodeId);
+      setContextMenu(null);
+    }
+  }, [contextMenu, deleteNode]);
 
   return (
     <div className="w-full h-full">
@@ -166,6 +190,14 @@ export const CanvasContainer: React.FC = () => {
         />
         <Controls />
       </ReactFlow>
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onDelete={handleContextMenuDelete}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
     </div>
   );
 };

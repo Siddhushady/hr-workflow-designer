@@ -13,8 +13,8 @@ const App: React.FC = () => {
       {/* TOP HEADER */}
       <header className="px-6 py-3 border-b border-slate-700 bg-slate-900/90 backdrop-blur flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold tracking-wide">HR Workflow Designer</h1>
-          <p className="text-xs opacity-70">Build & simulate HR automation flows visually</p>
+          <h1 className="text-xl font-bold tracking-wide">FlowStudio</h1>
+          <p className="text-xs opacity-70">Visual workflow designer for HR automation</p>
         </div>
         <div className="text-xs flex gap-2">
           <span className="px-2 py-1 rounded bg-slate-800 border border-slate-600">React + Vite</span>
