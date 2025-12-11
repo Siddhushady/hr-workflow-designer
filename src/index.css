@@ -15,9 +15,19 @@ body,
   --panel-bg: rgba(17, 24, 39, 0.9);
 }
 
+/* Light mode colors */
+:root.light {
+  --canvas-bg: #f1f5f9;
+  --panel-bg: rgba(241, 245, 249, 0.9);
+}
+
 /* App container */
 body {
   @apply bg-gray-950 text-gray-200 overflow-hidden;
+}
+
+body.light {
+  @apply bg-slate-50 text-slate-900;
 }
 
 /* Smooth transitions for UI */
@@ -40,9 +50,24 @@ body {
 ::-webkit-scrollbar {
   width: 6px;
 }
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-thumb {
   @apply bg-slate-700 rounded-md;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-slate-500;
+}
+
+/* Light mode scrollbar */
+:root.light ::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-md;
+}
+
+:root.light ::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
 }

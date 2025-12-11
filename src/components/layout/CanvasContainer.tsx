@@ -11,6 +11,7 @@ import "reactflow/dist/style.css";
 
 import { useWorkflowStore } from "../../store/useWorkflowStore";
 import { useSimulationStore } from "../../store/useSimulationStore";
+import { useThemeStore } from "../../store/useThemeStore";
 import type { WorkflowEdge } from "../../core/types/workflow";
 
 import { CustomStartNode } from "../canvas/nodes/StartNode";
@@ -38,6 +39,24 @@ const nodeTypes = {
   end: CustomEndNode,
 };
 
+// MiniMap node color mapping based on node type
+const getNodeColor = (node: RFNode): string => {
+  switch (node.type) {
+    case "start":
+      return "#a855f7"; // purple-500
+    case "task":
+      return "#6366f1"; // indigo-500
+    case "approval":
+      return "#10b981"; // emerald-500
+    case "automation":
+      return "#f59e0b"; // amber-500
+    case "end":
+      return "#ef4444"; // red-500
+    default:
+      return "#64748b"; // slate-500
+  }
+};
+
 export const CanvasContainer: React.FC = () => {
   const [contextMenu, setContextMenu] = useState<{
     x: number;
@@ -53,6 +72,7 @@ export const CanvasContainer: React.FC = () => {
   const deleteNode = useWorkflowStore((state) => state.deleteNode);
   const deleteEdge = useWorkflowStore((state) => state.deleteEdge);
   const clearResult = useSimulationStore((state) => state.clearResult);
+  const theme = useThemeStore((state) => state.theme);
 
   // Convert store nodes to ReactFlow nodes
   const rfNodes: RFNode[] = useMemo(
@@ -180,13 +200,22 @@ export const CanvasContainer: React.FC = () => {
         onNodeClick={onNodeClick}
         onNodeContextMenu={onNodeContextMenu}
         fitView
-        className="bg-gradient-to-b from-slate-900 to-slate-950"
+        className={
+          theme === "light"
+            ? "bg-gradient-to-b from-slate-100 to-slate-200"
+            : "bg-gradient-to-b from-slate-900 to-slate-950"
+        }
       >
         <Background gap={18} size={1} />
         <MiniMap
           pannable
           zoomable
-          className="bg-slate-900/80 rounded-xl border border-slate-700"
+          nodeColor={getNodeColor}
+          className={
+            theme === "light"
+              ? "bg-slate-200/80 rounded-xl border border-slate-300"
+              : "bg-slate-900/80 rounded-xl border border-slate-700"
+          }
         />
         <Controls />
       </ReactFlow>

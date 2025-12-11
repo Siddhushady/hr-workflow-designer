@@ -4,31 +4,49 @@ import { Sidebar } from "./components/layout/Sidebar";
 import { CanvasContainer } from "./components/layout/CanvasContainer";
 import { NodeConfigPanel } from "./components/layout/NodeConfigPanel";
 import { SimulationDialog } from "./components/simulation/SimulationDialog";
+import { ThemeProvider } from "./components/layout/ThemeProvider";
+import { ThemeToggle } from "./components/layout/ThemeToggle";
+import { useThemeStore } from "./store/useThemeStore";
 import "./index.css";
 
-const App: React.FC = () => {
-  return (
-    <div className="min-h-screen flex flex-col bg-[#0e1117] text-slate-200">
+const AppContent: React.FC = () => {
+  const theme = useThemeStore((state) => state.theme);
 
+  return (
+    <div
+      className={`min-h-screen flex flex-col transition-colors ${
+        theme === "light"
+          ? "bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 text-slate-900"
+          : "bg-gradient-to-br from-[#0e1117] via-slate-900 to-[#0d0d14] text-slate-200"
+      }`}
+    >
       {/* TOP HEADER */}
-      <header className="px-6 py-3 border-b border-slate-700 bg-slate-900/90 backdrop-blur flex justify-between items-center">
+      <header
+        className={`px-6 py-3 border-b-2 flex justify-between items-center transition-colors ${
+          theme === "light"
+            ? "border-slate-300 bg-white"
+            : "border-slate-700 bg-slate-900/90"
+        }`}
+      >
         <div>
           <h1 className="text-xl font-bold tracking-wide">FlowStudio</h1>
-          <p className="text-xs opacity-70">Visual workflow designer for HR automation</p>
+          <p className={`text-xs opacity-70 ${theme === "light" ? "text-slate-600" : ""}`}>
+            Visual workflow designer for HR automation
+          </p>
         </div>
-        <div className="text-xs flex gap-2">
-          <span className="px-2 py-1 rounded bg-slate-800 border border-slate-600">React + Vite</span>
-          <span className="px-2 py-1 rounded bg-slate-800 border border-slate-600">ReactFlow</span>
-          <span className="px-2 py-1 rounded bg-slate-800 border border-slate-600">MSW Mock APIs</span>
-          <span className="px-2 py-1 rounded bg-slate-800 border border-slate-600">Zustand</span>
-        </div>
+        <ThemeToggle />
       </header>
 
       {/* MAIN APP LAYOUT */}
       <div className="flex flex-1 overflow-hidden">
-
         {/* LEFT PANEL */}
-        <aside className="w-60 border-r border-slate-800 bg-slate-950/90">
+        <aside
+          className={`w-60 border-r-2 transition-colors ${
+            theme === "light"
+              ? "border-slate-300 bg-slate-50"
+              : "border-slate-700 bg-slate-950/90"
+          }`}
+        >
           <Sidebar />
         </aside>
 
@@ -39,11 +57,25 @@ const App: React.FC = () => {
         </main>
 
         {/* RIGHT PANEL NODE CONFIG */}
-        <aside className="w-80 border-l border-slate-800 bg-slate-950/90">
+        <aside
+          className={`w-80 border-l-2 transition-colors ${
+            theme === "light"
+              ? "border-slate-300 bg-slate-50"
+              : "border-slate-700 bg-slate-950/90"
+          }`}
+        >
           <NodeConfigPanel />
         </aside>
       </div>
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 };
 
